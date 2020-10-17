@@ -7,7 +7,7 @@
 
 
 ## 1) Pipeline
-![7aec70ff7adc8f0329b14d0e288ba0e8.png](evernotecid://6BB70527-BB50-40E3-8023-A07526CA92F8/appyinxiangcom/28382199/ENResource/p33)
+![figs/TCR-pipeline.png](figs/TCR-pipeline.png)
 
 ## 2) Data Structure
 ### 2a) getting software & data
