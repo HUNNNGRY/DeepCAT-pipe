@@ -18,14 +18,16 @@ not distributed yet...
 ```bash
 git clone https://github.com/HUNNNGRY/TCR.git 
 ```
-data ([download](https://cloud.tsinghua.edu.cn/library/14156f8d-93f5-496d-8837-90a8e0d24e4e/shared_data/))
+
+**data** ([download](https://cloud.tsinghua.edu.cn/library/14156f8d-93f5-496d-8837-90a8e0d24e4e/shared_data/))
+
 1.TCR-seq dir
 ```./TCR/sample_data/PBMC_TCR-seq```
 
 2.lulab RNA-seq dir
 ```./TCR/sample_data/PBMC_RNA-seq ```
 
-software/env requirement
+**software/env requirement**
 
 1. anaconda3
 
@@ -43,20 +45,25 @@ make
 cd -
 cd ./TCR
 ```
+
 environment configuration see 
 [https://github.com/liulab-dfci/TRUST4](https://github.com/liulab-dfci/TRUST4)
 
 3. DeepCAT
 
 [https://github.com/HUNNNGRY/DeepCAT](https://github.com/HUNNNGRY/DeepCAT)
+
 original repo: [https://github.com/s175573/DeepCAT](https://github.com/s175573/DeepCAT)
 
 4. iSMART
+
 original repo: [https://github.com/s175573/iSMART](https://github.com/s175573/iSMART)
 
 ### 2b) input
 * pre-processed tsv TCR-seq file from adaptativebiotech
+
 or
+
 * raw fastq file from PBMC RNA seq
 
 ### 2c) output
@@ -93,6 +100,7 @@ wc -l ./test_PBMC_TCR-seq/01_filter_output/control/TestReal-HIP09046.tsv
 ```
 
 4. cluster using iSMART
+
 ```bash
 # cluster similar TCR sequences using iSMART;使用iSMART聚类
 python ./iSMARTv3.py -d ./test_PBMC_TCR-seq/01-filter-output/disease -o ./test_PBMC_TCR-seq/02-cluster-output/disease
@@ -103,18 +111,23 @@ wc -l ./test_PBMC_TCR-seq/02-cluster-output/control/TestReal-HIP09046.tsv_Cluste
 ```
 
 5. predict cancer score(probability) using DeepCAT
+
 ```bash
 # 预测肿瘤样本组和对照样本组
 bash  ./Script_DeepCAT.sh -t ./02-cluster-output/disease/ 
 bash  ./Script_DeepCAT.sh -t ./02-cluster-output/control/
 # note:成功后当前文件夹会产生两个txt文件，分布记录肿瘤和对照组的不同样本的预测分数
+
 # 查看样本肿瘤预测得分
 head ./Cancer_score_control.txt
 head ./Cancer_score_disease.txt
+
 # 把预测结果放入输出目录中
 mv ./Cancer_score_{control,disease}.txt ./test_PBMC_TCR-seq/03_deepcat_output
 ```
+
 6. visualize cancer score result
+
 ```bash
 # make boxplot and ROC curve using Rscripts;利用已有脚本画boxplot和ROC curve
 Rscript ./plot.R ./test_PBMC_TCR-seq
@@ -123,12 +136,14 @@ Rscript ./plot.R ./test_PBMC_TCR-seq
 * boxplot横坐标两列分别代表肿瘤和对照组，纵坐标是一个样本（每个点）的cancer score
 * ROC曲线用于分类效果的评估，线下面积越接近1（越接近左上角）说明分类效果越好
 
-#### using PBMC RNA-seq as input
+
+### using PBMC RNA-seq as input
 总体上PBMC RNA-seq作为input和上一步TCR-seq相似，主要差别在于
 * 需要先用TRUST4从RNA-seq中得到包含TCR序列的文件
 * 由于RNA-seq是非靶向测序，得到的TCR记录可能会很少，这里统一不再经过聚类步骤而直接用DeepCAT预测
 
 1. make working directory tree 
+
 ```bash
 # 确认当前路径在DeepCAT目录中
 mkdir -p ./test_PBMC_RNA-seq/{01_TCRcalling_output,02_filter_output,03_deepcat_output}
@@ -136,6 +151,7 @@ mkdir -p ./test_PBMC_RNA-seq/{01_TCRcalling,02_filter}_output/{disease,control}
 ```
 
 2. TCR calling
+
 ```bash
 # 从fastq(.gz)原始文件得到TCR序列信息
 ./packages/TRUST4/run-trust4  -1 controlID_1.fastq.gz -2 controlID_2.fastq.gz -f ./reference/TRUST4/hg38_bcrtcr.fa --ref ./reference/TRUST4/human_IMGT+C.fa -t 4 -o ./test_PBMC_RNA-seq/01_TCRcalling_output/control/controlID
@@ -150,9 +166,11 @@ done
 head ./test_PBMC_RNA-seq/01_TCRcalling_output/disease/CRC-2415350_report.tsv
 wc -l ./test_PBMC_RNA-seq/01_TCRcalling_output/disease/CRC-2415350_report.tsv
 ```
+
 **note: 由于本步骤需要一定时间，可以考虑直接从已有TRUST4 TCR calling输出文件开始下一步,把```./sample_data/PBMC_TCR-seq/```目录下的文件全部移动到```./test_PBMC_RNA-seq/01_TCRcalling_output/```目录下即可**
 
 3. filter/prepare input  
+
 ```bash
 # filter invalid TCR sequence, using TCRB V region CDR3 sequence only
 Rscript ./scripts/filter_TRUST4.R ./test_PBMC_RNA-seq/01_TCRcalling_output/disease   ./test_PBMC_RNA-seq/02_filter_output/disease
@@ -161,16 +179,20 @@ Rscript ./scripts/filter_TRUST4.R ./test_PBMC_RNA-seq/01_TCRcalling_output/contr
 # keep an eye on the change of row/record number;留意查看filter前后行数（TCR）的数目变化 
 wc -l ./test_PBMC_TCR-seq/02_filter_output/disease/CRC-2415350_report_filter.tsv
 ```
+
 **note: 注意这里用于过滤的是R脚本filter_TRUST4.R, 而不是之前的python脚本PrepareAdaptiveFile_corrected.py**
 
 4. predict cancer score(probability) using DeepCAT
+
 与TCR-seq相同，只是注意因为RNA-seq没有聚类，这里DeepCAT的input目录是./test_PBMC_RNA-seq/02_filter_output，而不是之前的./test_PBMC_RNA-seq/02_cluster_output
 
 5. visualize cancer score result
+
 与TCR-seq相同
 
 
 ## 4) Tips/Utilities
+
 wiki
 * Non-invasive dianosis:
 * PBMC
