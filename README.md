@@ -75,7 +75,7 @@ or
 ## 3) Running Steps
 Enter into bash interface, make sure you are in TCR dir and under TCR conda env
 进入bash终端，确保当前路径在TCR目录，且已激活TCR的conda环境
-### using PBMC TCR-seq as input
+### Option1: Using PBMC TCR-seq as input
 
 1. view TCR_input data
 ```bash
@@ -106,6 +106,7 @@ wc -l ./test_PBMC_TCR-seq/01_filter_output/control/TestReal-HIP09046.tsv
 ```bash
 # cluster similar TCR sequences using iSMART;使用iSMART聚类
 python ./iSMARTv3.py -d ./test_PBMC_TCR-seq/01_filter_output/disease -o ./test_PBMC_TCR-seq/02_cluster_output/disease
+
 python ./iSMARTv3.py -d ./test_PBMC_TCR-seq/01_filter_output/control -o ./test_PBMC_TCR-seq/02_cluster_output/control
 
 #keep an eye on the change of row/record number;留意查看cluster前后行数（TCR）的数目变化 
@@ -116,9 +117,11 @@ wc -l ./test_PBMC_TCR-seq/02_cluster_output/control/TestReal-HIP09046.tsv_Cluste
 
 ```bash
 # 预测肿瘤样本组和对照样本组
-bash  ./Script_DeepCAT.sh -t ./02_cluster_output/disease/ 
-bash  ./Script_DeepCAT.sh -t ./02_cluster_output/control/
-# note:成功后当前文件夹会产生两个txt文件，分布记录肿瘤和对照组的不同样本的预测分数
+bash  ./Script_DeepCAT.sh -t ./test_PBMC_TCR-seq/02_cluster_output/disease 
+bash  ./Script_DeepCAT.sh -t ./test_PBMC_TCR-seq/02_cluster_output/control
+# note:
+# 注意命令最后不要加“/”
+# 成功后当前文件夹会产生两个txt文件，分布记录肿瘤和对照组的不同样本的预测分数
 
 # 查看样本肿瘤预测得分
 head ./Cancer_score_control.txt
@@ -132,14 +135,18 @@ mv ./Cancer_score_{control,disease}.txt ./test_PBMC_TCR-seq/03_deepcat_output
 
 ```bash
 # make boxplot and ROC curve using Rscripts;利用已有脚本画boxplot和ROC curve
-Rscript ./plot.R ./test_PBMC_TCR-seq
+Rscript ./plot.R ./test_PBMC_TCR-seq/03_deepcat_output
+# note:
+# 可能会因为部分包没有安装而报错，按照提示缺什么装什么即可
+# eg.  install.packages("ROCR")
 # 生成的结果在./test_PBMC_TCR-seq/03_deepcat_output路径下
 ```
+
 * boxplot横坐标两列分别代表肿瘤和对照组，纵坐标是一个样本（每个点）的cancer score
 * ROC曲线用于分类效果的评估，线下面积越接近1（越接近左上角）说明分类效果越好
 
 
-### using PBMC RNA-seq as input
+### Option2: Using PBMC RNA-seq as input
 总体上PBMC RNA-seq作为input和上一步TCR-seq相似，主要差别在于
 * 需要先用TRUST4从RNA-seq中得到包含TCR序列的文件
 * 由于RNA-seq是非靶向测序，得到的TCR记录可能会很少，这里统一不再经过聚类步骤而直接用DeepCAT预测
@@ -169,28 +176,44 @@ head ./test_PBMC_RNA-seq/01_TCRcalling_output/disease/CRC-2415350_report.tsv
 wc -l ./test_PBMC_RNA-seq/01_TCRcalling_output/disease/CRC-2415350_report.tsv
 ```
 
-**note: 由于本步骤需要一定时间，可以考虑直接从已有TRUST4 TCR calling输出文件开始下一步,把```./sample_data/PBMC_TCR-seq/```目录下的文件全部移动到```./test_PBMC_RNA-seq/01_TCRcalling_output/```目录下即可**
+**note: 由于本步骤需要一定时间，可以考虑直接从已有TRUST4 TCR calling输出文件开始下一步,把```./sample_data/PBMC_RNA-seq/```目录下的文件全部移动到```./test_PBMC_RNA-seq/01_TCRcalling_output/```目录下即可**
 
 3. filter/prepare input  
 
 ```bash
 # filter invalid TCR sequence, using TCRB V region CDR3 sequence only
-Rscript ./scripts/filter_TRUST4.R ./test_PBMC_RNA-seq/01_TCRcalling_output/disease   ./test_PBMC_RNA-seq/02_filter_output/disease
-Rscript ./scripts/filter_TRUST4.R ./test_PBMC_RNA-seq/01_TCRcalling_output/control   ./test_PBMC_RNA-seq/02_filter_output/control
+# For循环分别过滤疾病和对照组的所有样本 (最好提前准备含有sampleID的文件)
+for idx in `cat ./test_PBMC_RNA-seq/01_TCRcalling_output/diseaseID.txt`
+do
+Rscript ./filter_TRUST4.R ./test_PBMC_RNA-seq/01_TCRcalling_output/disease   ./test_PBMC_RNA-seq/02_filter_output/disease ${idx}
+done
+
+for idx in `cat ./test_PBMC_RNA-seq/01_TCRcalling_output/controlID.txt`
+do
+Rscript ./filter_TRUST4.R ./test_PBMC_RNA-seq/01_TCRcalling_output/control   ./test_PBMC_RNA-seq/02_filter_output/control ${idx}
+done
 
 # keep an eye on the change of row/record number;留意查看filter前后行数（TCR）的数目变化 
-wc -l ./test_PBMC_TCR-seq/02_filter_output/disease/CRC-2415350_report_filter.tsv
+wc -l ./test_PBMC_RNA-seq/02_filter_output/disease/CRC-2415350_report_filter.tsv
 ```
 
 **note: 注意这里用于过滤的是R脚本filter_TRUST4.R, 而不是之前的python脚本PrepareAdaptiveFile_corrected.py**
 
 4. predict cancer score(probability) using DeepCAT
+```bash
+# 与TCR-seq相同，只是注意因为RNA-seq没有聚类，这里DeepCAT的input目录是./test_PBMC_RNA-seq/02_filter_output，而不是之前的./test_PBMC_TCR-seq/02_cluster_output
+bash  ./Script_DeepCAT.sh -t ./test_PBMC_RNA-seq/02_filter_output/disease 
 
-与TCR-seq相同，只是注意因为RNA-seq没有聚类，这里DeepCAT的input目录是./test_PBMC_RNA-seq/02_filter_output，而不是之前的./test_PBMC_RNA-seq/02_cluster_output
+bash  ./Script_DeepCAT.sh -t ./test_PBMC_RNA-seq/02_filter_output/control
+
+mv ./Cancer_score_{control,disease}.txt ./test_PBMC_RNA-seq/03_deepcat_output
+```
 
 5. visualize cancer score result
-
-与TCR-seq相同
+```bash
+# 与TCR-seq相同
+Rscript ./plot.R ./test_PBMC_RNA-seq/03_deepcat_output
+```
 
 
 ## 4) Tips/Utilities
