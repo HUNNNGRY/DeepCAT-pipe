@@ -19,6 +19,7 @@ not distributed yet...
 git clone https://github.com/HUNNNGRY/TCR.git 
 ```
 
+
 **data** ([download](https://cloud.tsinghua.edu.cn/library/14156f8d-93f5-496d-8837-90a8e0d24e4e/shared_data/))
 
 1.TCR-seq dir
@@ -26,6 +27,7 @@ git clone https://github.com/HUNNNGRY/TCR.git
 
 2.lulab RNA-seq dir
 ```./TCR/sample_data/PBMC_RNA-seq ```
+
 
 **software/env requirement**
 
@@ -80,7 +82,7 @@ Enter into bash interface, make sure you are in TCR dir and under TCR conda env
 # check header
 head ./sample_data/PBMC_TCR-seq/HIP09046.tsv 
 # count row number
-wc -l ./sample_data/PBMC_TCR-seq/HIP09046.tsv
+wc -l ./sample_data/PBMC_TCR-seq/control/HIP09046.tsv
 ```
 
 2. make working directory tree 
@@ -103,19 +105,19 @@ wc -l ./test_PBMC_TCR-seq/01_filter_output/control/TestReal-HIP09046.tsv
 
 ```bash
 # cluster similar TCR sequences using iSMART;使用iSMART聚类
-python ./iSMARTv3.py -d ./test_PBMC_TCR-seq/01-filter-output/disease -o ./test_PBMC_TCR-seq/02-cluster-output/disease
-python ./iSMARTv3.py -d ./test_PBMC_TCR-seq/01-filter-output/control -o ./test_PBMC_TCR-seq/02-cluster-output/control
+python ./iSMARTv3.py -d ./test_PBMC_TCR-seq/01_filter_output/disease -o ./test_PBMC_TCR-seq/02_cluster_output/disease
+python ./iSMARTv3.py -d ./test_PBMC_TCR-seq/01_filter_output/control -o ./test_PBMC_TCR-seq/02_cluster_output/control
 
 #keep an eye on the change of row/record number;留意查看cluster前后行数（TCR）的数目变化 
-wc -l ./test_PBMC_TCR-seq/02-cluster-output/control/TestReal-HIP09046.tsv_ClusteredCDR3s_7.5.txt
+wc -l ./test_PBMC_TCR-seq/02_cluster_output/control/TestReal-HIP09046.tsv_ClusteredCDR3s_7.5.txt
 ```
 
 5. predict cancer score(probability) using DeepCAT
 
 ```bash
 # 预测肿瘤样本组和对照样本组
-bash  ./Script_DeepCAT.sh -t ./02-cluster-output/disease/ 
-bash  ./Script_DeepCAT.sh -t ./02-cluster-output/control/
+bash  ./Script_DeepCAT.sh -t ./02_cluster_output/disease/ 
+bash  ./Script_DeepCAT.sh -t ./02_cluster_output/control/
 # note:成功后当前文件夹会产生两个txt文件，分布记录肿瘤和对照组的不同样本的预测分数
 
 # 查看样本肿瘤预测得分
@@ -193,7 +195,7 @@ wc -l ./test_PBMC_TCR-seq/02_filter_output/disease/CRC-2415350_report_filter.tsv
 
 ## 4) Tips/Utilities
 
-wiki
+**wiki**
 * Non-invasive dianosis:
 * PBMC
 * TCR
@@ -203,7 +205,8 @@ wiki
 * RNA-seq
 * TCR-seq
 
-reference
+
+**reference**
 * TRUST4: summary + paper link
 * iSMART: summary + paper link
 * DeepCAT: summary + paper link
