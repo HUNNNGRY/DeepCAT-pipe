@@ -229,13 +229,16 @@ Rscript ./plot.R ./test_PBMC_RNA-seq/03_deepcat_output
 * TCR-seq
 
 
+
 **reference**
-* TRUST4: summary + paper link
-* iSMART: summary + paper link
-* DeepCAT: summary + paper link
+* TRUST4: [Ultrasensitive detection of TCR hypervariable-region sequences in solid-tissue RNA–seq data](https://www.nature.com/articles/ng.3820)
+* iSMART: [Investigation of Antigen-Specific T-Cell Receptor Clusters in Human Cancers](https://clincancerres.aacrjournals.org/content/26/6/1359)
+* DeepCAT: [De novo prediction of cancer-associated T cell receptors for noninvasive cancer detection](https://stm.sciencemag.org/content/12/557/eaaz3738)
+
 
 > if you want to exercise with raw fastq input with out RNA-seq pipeline, please download raw data in [here](https://cloud.tsinghua.edu.cn/library/14156f8d-93f5-496d-8837-90a8e0d24e4e/shared_data/) (Tsinghua cloud)
 or ```/BioII/lulab_b/wangsiqi/exRNA/exRNA-panel/pico/02.rawdata_PBMC```
+
 
 ## 5) Homework
 
