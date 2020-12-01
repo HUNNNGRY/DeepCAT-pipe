@@ -270,6 +270,6 @@ or ```/BioII/lulab_b/wangsiqi/exRNA/exRNA-panel/pico/02.rawdata_PBMC```
 
 ## 5) Homework
 
-1. Finish above 2 pipeline using provided input
+1. Finish above 2 pipelines using provided input data
 
-2. Compare output between TCR-seq and RNA-seq, which sequencing methods perform better in cancer diagnosis and why, please summarize (dis)advantages of both sequencing methods.
+2. Compare output between TCR-seq and RNA-seq, which sequencing method performs better in cancer diagnosis and why, please summarize (dis)advantages of both sequencing methods.
