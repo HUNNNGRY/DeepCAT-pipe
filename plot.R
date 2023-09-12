@@ -35,7 +35,7 @@ ggplot(score,aes(x=disease,y=as.numeric(DeepCAT_Score))) +
   geom_boxplot(fill = c("firebrick","steelblue"),outlier.shape = NA,show.legend = T) +
   stat_compare_means(comparisons = list(c("Control","Cancer"))) + # Add pairwise comparisons p-value
   geom_jitter(width = .2) +
-  scale_y_continuous(limits = c(0.1, 0.8) , oob = scales::squish) + # 限定范围方便比较
+  scale_y_continuous(limits = c(0.1, 0.8) , oob = scales::squish) + # limit to better compare
   theme_bw()
 ggsave(filename = paste(inputdir,"/boxplot.pdf",sep = ""))
 
@@ -44,22 +44,22 @@ ggsave(filename = paste(inputdir,"/boxplot.pdf",sep = ""))
 t_test <- t.test(as.double(Cancer$V2),as.double(Control$V2))
 print(t_test)
 
-# ROC   (好像label得指定为1，0，字符或数值型均可，肿瘤较高水平为1, 否则出现很小的auc）
+# ROC  (tumor: higher)
 if(!require(devtools)) install.packages("ROCR")
 if(!require(devtools)) install.packages("rms")
 library(ROCR,quietly = T)
 library(rms,quietly = T)
-ROC1 <- prediction(score$DeepCAT_Score, score$labels)   #构建ROC预测模型 
-ROC2 <- performance(ROC1,"tpr","fpr")   #计算预测模型的TPR/FPR值
-AUC <- performance(ROC1,"auc")   #计算曲线下面积(AUC)值
-AUC.value <- unlist(AUC@y.values) #查看AUC值
+ROC1 <- prediction(score$DeepCAT_Score, score$labels)   #get ROC model 
+ROC2 <- performance(ROC1,"tpr","fpr")   #calculate model's TPR/FPR
+AUC <- performance(ROC1,"auc")   #calculate model's AUC
+AUC.value <- unlist(AUC@y.values) #check AUC
 print(AUC.value)
 
-pdf(paste(inputdir,"/auc.pdf",sep = ""))  # 需要提前指定普通绘图路径和文件名
+pdf(paste(inputdir,"/auc.pdf",sep = ""))  # predefine path to save plot 
 plot(ROC2, 
-     col="red",   #曲线的颜色
-     xlab="False positive rate", ylab="True positive rate",   # x轴和y轴的名称
+     col="red",   #curve color
+     xlab="False positive rate", ylab="True positive rate",   # x/y-axis name
      lty=1,lwd=3,
      main=paste("AUC=",AUC.value))
-abline(0, 1, lty=2, lwd=3)   #绘制对角线
+abline(0, 1, lty=2, lwd=3)   # draw diagonal
 
